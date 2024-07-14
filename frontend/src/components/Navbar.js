@@ -3,26 +3,30 @@ import ProfileInfo from './ProfileInfo'
 import { useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar';
 
-const Navbar = () => {
+const Navbar = ({userInfo,searchNotes,handleClearSearch}) => {
 
   const [searchQuery,setSearchQuery]=useState("")
   const navigate=useNavigate();
 
   const onLogout=()=>{
+    localStorage.clear()
     navigate("/login");
   };
 
   const handleSearch=()=>{
-
+    if(searchQuery){
+      searchNotes(searchQuery)
+    }
   }
 
   const onClearSearch=()=>{
+    handleClearSearch()
     setSearchQuery("")
   }
 
 
   return (
-    <div className='bg-white flex items-center justify-between px-6 py-2 drop-shadow'>
+    <div className='bg-whitesmoke flex items-center justify-between px-6 py-2 drop-shadow'>
         <h2 className='text-xl font-medium text-black'>Notes</h2>
 
         <SearchBar value={searchQuery}
@@ -32,7 +36,7 @@ const Navbar = () => {
         handleSearch={handleSearch}
         onClearSearch={onClearSearch}
         />
-        <ProfileInfo onLogout={onLogout}/>
+        <ProfileInfo userInfo={userInfo} onLogout={onLogout}/>
       
     </div>
   )
