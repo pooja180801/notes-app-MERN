@@ -1,23 +1,60 @@
 import React, { useState } from 'react'
 import TagInput from '../components/TagInput'
 import { MdClose } from 'react-icons/md';
+import axiosInstance from '../utils/axiosInstance';
 
-const AddEditNotes = ({noteData,type,onClose}) => {
+const AddEditNotes = ({noteData,type,onClose,getAllNotes,showToastMessage}) => {
 
-    const [title,setTitle]=useState("");
-    const [content,setContent]=useState("");
-    const [tags,setTags]=useState([]);
+    const [title,setTitle]=useState(noteData?.title || "");
+    const [content,setContent]=useState(noteData?.content || "");
+    const [tags,setTags]=useState(noteData?.tags || []);
 
     const [error,setError]=useState(null)
 
 
     const addNewNote=async()=>{
+      try {
+        const response=await axiosInstance.post('/add',{
+          title,
+          content,
+          tags
+        })
 
+        if(response.data && response.data.note){
+          showToastMessage("Note added successfully!!")
+          getAllNotes()
+          onClose()
+        }
+
+      } catch (error) {
+        if(error.response && error.response.data && error.response.data.message){
+          setError(error.response.data.message)
+        }
+      }
     }
+
+
     const EditNote=async()=>{
+      const noteId=noteData._id;
+      try {
+        const response=await axiosInstance.put('/edit/'+noteId,{
+          title,
+          content,
+          tags
+        })
 
+        if(response.data && response.data.note){
+          showToastMessage("Note updated successfully!!")
+          getAllNotes()
+          onClose()
+        }
+
+      } catch (error) {
+        if(error.response && error.response.data && error.response.data.message){
+          setError(error.response.data.message)
+        }
+      }
     }
-
 
     const handleAddNote=()=>{
         if(!title){
@@ -53,7 +90,7 @@ const AddEditNotes = ({noteData,type,onClose}) => {
         <input 
         type="text" 
         className='text-xl text-slate-950 outline-none'
-        placeholder='fjdfhf'
+        placeholder='Enter your title here'
         value={title}
         onChange={({target})=>setTitle(target.value)}
         />
@@ -64,7 +101,7 @@ const AddEditNotes = ({noteData,type,onClose}) => {
         <textarea 
         type='text'
         className='text-sm text-slate-950 outline-none bg-slate-100 p-2 rounded'
-        placeholder='"Content'
+        placeholder='Content'
         rows={10}
         value={content}
         onChange={({target})=>setContent(target.value)}
@@ -78,7 +115,7 @@ const AddEditNotes = ({noteData,type,onClose}) => {
 
         {error && <p className='text-red-500 text-xs pb-1 mt-2'>{error}</p> }
 
-        <button className='btn-primary font-medium mt-5 p-3' onClick={handleAddNote}>Add Notes</button>
+        <button className='btn-primary font-medium mt-5 p-3' onClick={handleAddNote}>{type==="edit"? "Edit Note":"Add Note"}</button>
 
     </div>
   )

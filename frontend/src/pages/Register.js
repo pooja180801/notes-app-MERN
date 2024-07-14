@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
-import { Link } from 'react-router-dom'
+import { Link ,useNavigate} from 'react-router-dom'
 import PasswordInput from '../components/PasswordInput.js'
 import { validateEmail, validatePassword } from '../utils/helper.js'
+import axiosInstance from '../utils/axiosInstance.js'
 
 const Register = () => {
+
+  const navigate=useNavigate();
 
   const [name,setName]=useState("")
   const [email,setEmail]=useState("")
@@ -35,6 +38,32 @@ const Register = () => {
     }
 
     setError("")
+
+    //rregister api call
+    try {
+      const response=await axiosInstance.post('/register',{
+        username:name,
+        email:email,
+        password:password,
+      })
+
+      if(response.data && response.data.error){
+        setError(response.data.message)
+        return
+      }
+
+      if(response.data && response.data.accessToken){
+        localStorage.setItem("token",response.data.accessToken)
+        navigate('/dashboard')
+      }
+
+    } catch (error) {
+      if(error.response && error.response.data && error.response.data.message){
+        setError(error.response.data.message)
+      }else{
+        setError("An unexpected error occured.Please try again")
+      }
+    }
   }
 
 
@@ -47,7 +76,7 @@ const Register = () => {
                   <h4 className='text-2xl mb-7'>Register</h4>
                   <input 
                   type="text" 
-                  placeholder='Username' 
+                  placeholder='Fullname' 
                   className='input-box' 
                   value={name} 
                   onChange={(e)=>setName(e.target.value)}
